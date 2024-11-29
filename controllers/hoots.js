@@ -42,6 +42,26 @@ try {
 }
 })
 
+router.put('/:hootId', async (req, res) => {
+    try {
+        const hoot = await Hoot.findById(req.params.hootId);                 // Find the hoot.
+        
+        if (!hoot.author.equals(req.user._id)) {                             // Check permissions.
+            return res.status(403).send("You are not allowed to do that!");
+        }
+
+        const updatedHoot = await Hoot.findByIdAndUpdate(                    // Update Hoot. And pass 3 arguments.
+            req.params.hootId,                                                // First: Is the ObjectId by which we will locate the hoot.
+            req.body,                                                         // Second: Is the form data (req.body) that will be used to update the hoot document.
+            { new: true }                                                     // Third: Is to specifies that we want this method to return the updated document.
+        );
+
+        updatedHoot._doc.author = req.user;                                  // Append req.user to the author property.
+        res.status(200).json(updatedHoot)                                    // Issue JSON response.
+    } catch (error) {
+        res.status(500).json(error);
+    }
+})
 
 
 module.exports = router;
