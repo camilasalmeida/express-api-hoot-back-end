@@ -12,21 +12,21 @@ const router = express.Router();
 router.use(verifyToken);
 
 router.post('/', async (req, res) => {
-try {
-    req.body.author = req.user._id;
-    const hoot = await Hoot.create(req.body);
-    hoot._doc.author = req.user;
-    res.status(201).json(hoot);
-} catch (error) {
-    res.status(500).json(error);
-}
+    try {
+        req.body.author = req.user._id;
+        const hoot = await Hoot.create(req.body);
+        hoot._doc.author = req.user;
+        res.status(201).json(hoot);
+    } catch (error) {
+        res.status(500).json(error);
+    }
 });
 
 router.get('/', async (req, res) => {
     try {
         const hoots = await Hoot.find({})
-        .populate('author')
-        .sort({ createdAt: 'desc' });
+            .populate('author')
+            .sort({ createdAt: 'desc' });
         res.status(200).json(hoots);
     } catch (error) {
         res.status(500).json(error);
@@ -34,18 +34,18 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:hootId', async (req, res) => {
-try {
-    const hoot = await Hoot.findById(req.params.hootId).populate('author');
-    res.status(200).json(hoot);
-} catch (error) {
-    res.status(500).json(error);
-}
+    try {
+        const hoot = await Hoot.findById(req.params.hootId).populate('author');
+        res.status(200).json(hoot);
+    } catch (error) {
+        res.status(500).json(error);
+    }
 })
 
 router.put('/:hootId', async (req, res) => {
     try {
         const hoot = await Hoot.findById(req.params.hootId);                 // Find the hoot.
-        
+
         if (!hoot.author.equals(req.user._id)) {                             // Check permissions.
             return res.status(403).send("You are not allowed to do that!");
         }
@@ -62,6 +62,23 @@ router.put('/:hootId', async (req, res) => {
         res.status(500).json(error);
     }
 })
+
+router.delete('/:hootId', async (req, res) => {
+    try {
+        const hoot = await Hoot.findById(req.params.hootId);                 // Retrieve the hoot you want to delete.
+
+        if (!hoot.author.equals(req.user._id)) {                              // Check permissions.
+            return res.status(403).send("You are not allowed to do that!")
+        }
+        const deletedHoot = await Hoot.findByIdAndDelete(req.params.hootId);  // `findByIdandDelete` accepts an ObjectId(req.params.hootId), used to locate the hoot we want to remove from the database.
+
+        res.status(200).json(deletedHoot);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+})
+
+
 
 
 module.exports = router;
