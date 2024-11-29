@@ -78,6 +78,23 @@ router.delete('/:hootId', async (req, res) => {
     }
 })
 
+router.post('/:hootId/comments', async (req, res) => {
+    try {
+        req.body.author = req.user._id;                           // We need to append req.user._id to req.body.author. 
+        const hoot = await Hoot.findById(req.params.hootId);      // Retrieve the parent document we want to add a comment to.
+        hoot.comments.push(req.body);
+        await hoot.save();
+
+        const newComment = hoot.comments[hoot.comments.length - 1];     // Find the newly created comment.
+
+        newComment._doc.author = req.user;
+
+        res.status(201).json(newComment);                             // Respond with the newComment.
+    } catch (error) {
+        res.status(500).json(error);
+    }
+})
+
 
 
 
