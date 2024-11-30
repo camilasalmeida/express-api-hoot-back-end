@@ -95,7 +95,16 @@ router.post('/:hootId/comments', async (req, res) => {
     }
 })
 
-
-
+router.put('/:hootId/comments/:commentId', async (req, res) => {
+    try {
+        const hoot = await Hoot.findById(req.params.hootId);         // Find the parent document.
+        const comment = hoot.comments.id(req.params.commentId);      // MongooseDocumentArray.prototype.id() method. This method is called on the array of a document, and returns an embedded subdocument based on the provided ObjectId (req.params.commentId).
+        comment.text = req.body.text;                                // Update the retrieve comment.
+        await hoot.save();                                           // Save the parent document(hoot).
+        res.status(200).json({ message: 'Ok' });
+    } catch(error) {
+        res.status(500).json(error);
+    }
+})
 
 module.exports = router;
